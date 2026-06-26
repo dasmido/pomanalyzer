@@ -1,0 +1,21 @@
+meta {
+  name: Parse Pom File
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/api/gitlab/projects/{{GITLAB_PROJECT_ID}}/pom/parse
+  body: none
+  auth: none
+}
+
+query {
+  gitlabUrl: {{GITLAB_URL}}
+  branch: {{GITLAB_BRANCH}}
+  filePath: {{GITLAB_FILE_PATH}}
+}
+
+headers {
+  X-GitLab-Token: {{GITLAB_TOKEN}}
+}

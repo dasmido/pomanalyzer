@@ -1,0 +1,19 @@
+meta {
+  name: List Branches
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/gitlab/projects/{{GITLAB_PROJECT_ID}}/branches
+  body: none
+  auth: none
+}
+
+query {
+  gitlabUrl: {{GITLAB_URL}}
+}
+
+headers {
+  X-GitLab-Token: {{GITLAB_TOKEN}}
+}

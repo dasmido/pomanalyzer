@@ -1,0 +1,20 @@
+meta {
+  name: Find Pom Files
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BASE_URL}}/api/gitlab/projects/{{GITLAB_PROJECT_ID}}/poms
+  body: none
+  auth: none
+}
+
+query {
+  gitlabUrl: {{GITLAB_URL}}
+  branch: {{GITLAB_BRANCH}}
+}
+
+headers {
+  X-GitLab-Token: {{GITLAB_TOKEN}}
+}
