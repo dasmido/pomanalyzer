@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POM Analyzer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3248;
+      --accent: #6c63ff;
+      --accent-hover: #574fd6;
+      --text: #e2e4f0;
+      --text-muted: #7b80a0;
+      --success: #4ade80;
+      --error: #f87171;
+      --warn: #fbbf24;
+      --radius: 12px;
+      --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header .logo {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    header .logo span { color: var(--accent); }
+    header p {
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 780px;
+    }
+
+    /* ── Search bar ── */
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+    .search-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-row input::placeholder { color: var(--text-muted); }
+    .search-row input:focus { border-color: var(--accent); }
+    .search-row button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-row button:hover { background: var(--accent-hover); }
+    .search-row button:active { transform: scale(0.97); }
+    .search-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .loading .spinner { display: inline-block; }
+    .loading .btn-label { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error banner ── */
+    #error-box {
+      display: none;
+      margin-top: 20px;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid var(--error);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--error);
+      font-size: 0.9rem;
+    }
+
+    /* ── Results ── */
+    #result {
+      margin-top: 32px;
+      display: none;
+      width: 100%;
+      max-width: 780px;
+    }
+
+    /* ── Overview grid ── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .stat-card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .stat-card .value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    /* ── Section headers ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .section-header:hover { background: var(--surface2); }
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title .icon { font-size: 1rem; }
+    .badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .chevron { color: var(--text-muted); transition: transform 0.2s; font-size: 0.8rem; }
+    .section-body { padding: 0 20px 20px; }
+    .section.collapsed .section-body { display: none; }
+    .section.collapsed .chevron { transform: rotate(-90deg); }
+
+    /* ── Parent box ── */
+    .kv-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 8px 16px;
+      font-size: 0.88rem;
+    }
+    .kv-key { color: var(--text-muted); }
+    .kv-val { font-family: var(--mono); word-break: break-all; }
+
+    /* ── Dependency table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { transition: background 0.12s; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    .scope-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-family: var(--font);
+      font-weight: 500;
+    }
+    .scope-test    { background: rgba(251,191,36,0.15); color: var(--warn); }
+    .scope-runtime { background: rgba(74,222,128,0.12); color: var(--success); }
+    .scope-compile { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .scope-default { background: var(--surface2); color: var(--text-muted); }
+
+    /* ── Developer card ── */
+    .dev-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      font-size: 0.88rem;
+    }
+    .dev-name { font-weight: 600; margin-bottom: 4px; }
+    .dev-detail { color: var(--text-muted); font-size: 0.83rem; }
+
+    /* ── SCM ── */
+    .scm-url {
+      color: var(--accent);
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      word-break: break-all;
+    }
+    .scm-url:hover { text-decoration: underline; }
+
+    /* ── Properties ── */
+    .prop-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      margin: 4px;
+    }
+    .prop-pill .pk { color: var(--text-muted); }
+    .prop-pill .pv { color: var(--success); }
+
+    /* ── Plugin chips ── */
+    .plugin-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      margin-bottom: 8px;
+    }
+    .plugin-chip .pg { color: var(--text-muted); font-size: 0.78rem; }
+    .plugin-chip .pa { font-weight: 600; }
+
+    footer {
+      margin-top: 48px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">POM<span>Analyzer</span></div>
+  <p>Fetch and inspect any Maven POM file from a URL</p>
+</header>
+
+<!-- Input card -->
+<div class="card">
+  <div class="search-row">
+    <input
+      id="url-input"
+      type="text"
+      placeholder="https://raw.githubusercontent.com/.../pom.xml"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button id="analyze-btn" onclick="analyze()">
+      <div class="spinner"></div>
+      <span class="btn-label">Analyze</span>
+    </button>
+  </div>
+  <div id="error-box"></div>
+</div>
+
+<!-- Results -->
+<div id="result"></div>
+
+<footer>PomAnalyzer &mdash; powered by Spring Boot</footer>
+
+<script>
+  const urlInput = document.getElementById('url-input');
+
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
+
+  function setLoading(on) {
+    const btn = document.getElementById('analyze-btn');
+    btn.disabled = on;
+    btn.classList.toggle('loading', on);
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('error-box');
+    box.textContent = '⚠ ' + msg;
+    box.style.display = 'block';
+  }
+
+  function clearError() {
+    const box = document.getElementById('error-box');
+    box.style.display = 'none';
+    box.textContent = '';
+  }
+
+  async function analyze() {
+    const url = urlInput.value.trim();
+    if (!url) { showError('Please enter a URL.'); return; }
+    clearError();
+    setLoading(true);
+    document.getElementById('result').style.display = 'none';
+
+    try {
+      const resp = await fetch('/api/pom/parse-url?url=' + encodeURIComponent(url));
+      const data = await resp.json();
+      if (!resp.ok) {
+        showError(data.message || data.error || 'Request failed (' + resp.status + ')');
+      } else {
+        renderResult(data);
+      }
+    } catch (e) {
+      showError('Network error: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function scopeClass(scope) {
+    if (!scope) return 'scope-default';
+    const s = scope.toLowerCase();
+    if (s === 'test') return 'scope-test';
+    if (s === 'runtime') return 'scope-runtime';
+    if (s === 'compile') return 'scope-compile';
+    return 'scope-default';
+  }
+
+  function esc(str) {
+    if (!str) return '<span style="color:var(--text-muted)">—</span>';
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  function section(id, icon, title, badgeCount, content, collapsed = false) {
+    const badge = badgeCount !== null ? `<span class="badge">${badgeCount}</span>` : '';
+    const cls = collapsed ? 'section collapsed' : 'section';
+    return `
+      <div class="${cls}" id="sec-${id}">
+        <div class="section-header" onclick="toggleSection('sec-${id}')">
+          <div class="section-title">
+            <span class="icon">${icon}</span>${title}${badge}
+          </div>
+          <span class="chevron">&#9660;</span>
+        </div>
+        <div class="section-body">${content}</div>
+      </div>`;
+  }
+
+  function toggleSection(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+
+  function renderResult(d) {
+    const container = document.getElementById('result');
+    let html = '';
+
+    // ── Overview ──
+    html += `<div class="overview-grid">
+      ${stat('Group ID',      d.groupId)}
+      ${stat('Artifact ID',   d.artifactId)}
+      ${stat('Version',       d.version)}
+      ${stat('Name',          d.name)}
+      ${stat('Description',   d.description, 'full')}
+    </div>`;
+
+    // ── Parent ──
+    if (d.parent) {
+      const p = d.parent;
+      html += section('parent', '🧱', 'Parent', null, `
+        <div class="kv-grid">
+          <span class="kv-key">Group ID</span>   <span class="kv-val">${esc(p.groupId)}</span>
+          <span class="kv-key">Artifact ID</span><span class="kv-val">${esc(p.artifactId)}</span>
+          <span class="kv-key">Version</span>    <span class="kv-val">${esc(p.version)}</span>
+          ${p.relativePath ? `<span class="kv-key">Relative Path</span><span class="kv-val">${esc(p.relativePath)}</span>` : ''}
+        </div>`);
+    }
+
+    // ── Dependencies ──
+    if (d.dependencies && d.dependencies.length) {
+      let rows = '';
+      d.dependencies.forEach(dep => {
+        const sc = dep.scope || '';
+        rows += `<tr>
+          <td>${esc(dep.groupId)}</td>
+          <td>${esc(dep.artifactId)}</td>
+          <td>${dep.version ? esc(dep.version) : '<span style="color:var(--text-muted)">managed</span>'}</td>
+          <td>${sc ? `<span class="scope-badge ${scopeClass(sc)}">${esc(sc)}</span>` : '<span style="color:var(--text-muted)">—</span>'}</td>
+        </tr>`;
+      });
+      html += section('deps', '📦', 'Dependencies', d.dependencies.length, `
+        <table>
+          <thead><tr><th>Group ID</th><th>Artifact ID</th><th>Version</th><th>Scope</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`);
+    }
+
+    // ── Build Plugins ──
+    if (d.buildPlugins && d.buildPlugins.length) {
+      let chips = '';
+      d.buildPlugins.forEach(pl => {
+        chips += `<div class="plugin-chip">
+          <div class="pg">${esc(pl.groupId)}</div>
+          <div class="pa">${esc(pl.artifactId)}</div>
+          ${pl.version ? `<div style="color:var(--text-muted);font-size:0.78rem;margin-top:2px">${esc(pl.version)}</div>` : ''}
+        </div>`;
+      });
+      html += section('plugins', '🔧', 'Build Plugins', d.buildPlugins.length, chips);
+    }
+
+    // ── Properties ──
+    if (d.properties && Object.keys(d.properties).length) {
+      let pills = '';
+      for (const [k, v] of Object.entries(d.properties)) {
+        pills += `<span class="prop-pill"><span class="pk">${esc(k)}</span><span style="color:var(--border)">:</span><span class="pv">${esc(v)}</span></span>`;
+      }
+      html += section('props', '⚙️', 'Properties', Object.keys(d.properties).length, `<div style="margin-top:4px">${pills}</div>`);
+    }
+
+    // ── Developers ──
+    if (d.developers && d.developers.length) {
+      let devs = '';
+      d.developers.forEach(dev => {
+        devs += `<div class="dev-card">
+          <div class="dev-name">${esc(dev.name || dev.id || 'Unknown')}</div>
+          ${dev.email ? `<div class="dev-detail">✉ ${esc(dev.email)}</div>` : ''}
+          ${dev.organization ? `<div class="dev-detail">🏢 ${esc(dev.organization)}</div>` : ''}
+          ${dev.url ? `<div class="dev-detail"><a class="scm-url" href="${esc(dev.url)}" target="_blank">${esc(dev.url)}</a></div>` : ''}
+        </div>`;
+      });
+      html += section('devs', '👤', 'Developers', d.developers.length, devs);
+    }
+
+    // ── SCM ──
+    if (d.scm && (d.scm.url || d.scm.connection)) {
+      const s = d.scm;
+      html += section('scm', '🔗', 'Source Control', null, `
+        <div class="kv-grid">
+          ${s.url ? `<span class="kv-key">URL</span><span class="kv-val"><a class="scm-url" href="${esc(s.url)}" target="_blank">${esc(s.url)}</a></span>` : ''}
+          ${s.connection ? `<span class="kv-key">Connection</span><span class="kv-val">${esc(s.connection)}</span>` : ''}
+          ${s.developerConnection ? `<span class="kv-key">Dev Connection</span><span class="kv-val">${esc(s.developerConnection)}</span>` : ''}
+          ${s.tag ? `<span class="kv-key">Tag</span><span class="kv-val">${esc(s.tag)}</span>` : ''}
+        </div>`, true);
+    }
+
+    container.innerHTML = html;
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function stat(label, value, size) {
+    const style = size === 'full' ? 'grid-column: 1 / -1;' : '';
+    return `<div class="stat-card" style="${style}">
+      <div class="label">${label}</div>
+      <div class="value">${esc(value)}</div>
+    </div>`;
+  }
+</script>
+</body>
+</html>
