@@ -1,0 +1,16 @@
+meta {
+  name: Parse from URL
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/pom/parse-url
+  body: none
+  auth: none
+}
+
+query {
+  url: {{POM_URL}}
+}
+
