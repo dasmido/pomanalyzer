@@ -1,7 +1,12 @@
-package dev.damido.pomanalyzer.gitlab;
+package dev.damido.pomanalyzer.gitlab.service;
 
-import dev.damido.pomanalyzer.PomMetadata;
-import dev.damido.pomanalyzer.services.PomParserService;
+import dev.damido.pomanalyzer.gitlab.domain.GitLabBranch;
+import dev.damido.pomanalyzer.gitlab.domain.GitLabProject;
+import dev.damido.pomanalyzer.gitlab.domain.GitLabTreeItem;
+import dev.damido.pomanalyzer.gitlab.exception.GitLabApiException;
+import dev.damido.pomanalyzer.parser.domain.PomMetadata;
+import dev.damido.pomanalyzer.parser.services.PomParserService;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

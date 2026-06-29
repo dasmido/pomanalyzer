@@ -1,7 +1,8 @@
-package dev.damido.pomanalyzer.api;
+package dev.damido.pomanalyzer.parser.controller;
 
-import dev.damido.pomanalyzer.PomMetadata;
-import dev.damido.pomanalyzer.services.PomParserService;
+import dev.damido.pomanalyzer.parser.domain.PomMetadata;
+import dev.damido.pomanalyzer.parser.services.PomParserService;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;

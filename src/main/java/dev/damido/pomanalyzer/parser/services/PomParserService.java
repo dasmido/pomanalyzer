@@ -1,11 +1,12 @@
-package dev.damido.pomanalyzer.services;
+package dev.damido.pomanalyzer.parser.services;
 
-import dev.damido.pomanalyzer.BuildPluginMetadata;
-import dev.damido.pomanalyzer.Dependency;
-import dev.damido.pomanalyzer.DeveloperMetadata;
-import dev.damido.pomanalyzer.ParentMetadata;
-import dev.damido.pomanalyzer.PomMetadata;
-import dev.damido.pomanalyzer.ScmMetadata;
+import dev.damido.pomanalyzer.parser.domain.BuildPluginMetadata;
+import dev.damido.pomanalyzer.parser.domain.Dependency;
+import dev.damido.pomanalyzer.parser.domain.DeveloperMetadata;
+import dev.damido.pomanalyzer.parser.domain.ParentMetadata;
+import dev.damido.pomanalyzer.parser.domain.PomMetadata;
+import dev.damido.pomanalyzer.parser.domain.ScmMetadata;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;

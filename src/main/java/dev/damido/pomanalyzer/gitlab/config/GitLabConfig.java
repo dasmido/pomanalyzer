@@ -1,4 +1,4 @@
-package dev.damido.pomanalyzer.gitlab;
+package dev.damido.pomanalyzer.gitlab.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

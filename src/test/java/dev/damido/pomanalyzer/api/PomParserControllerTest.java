@@ -7,9 +7,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import dev.damido.pomanalyzer.Dependency;
-import dev.damido.pomanalyzer.PomMetadata;
-import dev.damido.pomanalyzer.services.PomParserService;
+import dev.damido.pomanalyzer.parser.controller.PomParserController;
+import dev.damido.pomanalyzer.parser.domain.Dependency;
+import dev.damido.pomanalyzer.parser.domain.PomMetadata;
+import dev.damido.pomanalyzer.parser.services.PomParserService;
+
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;

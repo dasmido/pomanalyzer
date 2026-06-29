@@ -1,7 +1,13 @@
-package dev.damido.pomanalyzer.gitlab;
+package dev.damido.pomanalyzer.gitlab.controller;
 
-import dev.damido.pomanalyzer.PomMetadata;
-import dev.damido.pomanalyzer.api.ApiError;
+import dev.damido.pomanalyzer.gitlab.domain.GitLabBranch;
+import dev.damido.pomanalyzer.gitlab.domain.GitLabProject;
+import dev.damido.pomanalyzer.gitlab.domain.GitLabTreeItem;
+import dev.damido.pomanalyzer.gitlab.exception.GitLabApiException;
+import dev.damido.pomanalyzer.gitlab.service.GitLabService;
+import dev.damido.pomanalyzer.parser.controller.ApiError;
+import dev.damido.pomanalyzer.parser.domain.PomMetadata;
+
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

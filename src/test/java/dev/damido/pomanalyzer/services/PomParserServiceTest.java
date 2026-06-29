@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import dev.damido.pomanalyzer.PomMetadata;
+import dev.damido.pomanalyzer.parser.domain.PomMetadata;
+import dev.damido.pomanalyzer.parser.services.PomParserService;
+
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
